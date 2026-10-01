@@ -3,7 +3,7 @@
  * (YatmoMap, YatmoPlaces, YatmoText) that render the Yatmo web components from their property
  * controls. The version line lets the plugin refresh the file when it ships a newer one.
  */
-export const YATMO_CODE_VERSION = "1.0.0"
+export const YATMO_CODE_VERSION = "1.0.1"
 
 export const YATMO_CODE = `// Yatmo for Framer, version ${YATMO_CODE_VERSION}. Written by the Yatmo plugin; edit freely, the plugin only
 // rewrites it when you ask. Docs: https://documentation.yatmo.com/plugins/framer
@@ -52,6 +52,14 @@ function useYatmoElement(tag: string, attributes: Record<string, string | number
     return ref
 }
 
+/** Framer gives colours as rgb()/rgba(); the Yatmo plugin wants a hex colour. */
+function hex(color: string | undefined): string | undefined {
+    if (!color) return undefined
+    const m = color.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/)
+    if (!m) return color
+    return "#" + [m[1], m[2], m[3]].map((n) => Number(n).toString(16).padStart(2, "0")).join("")
+}
+
 function location(p: Common) {
     const lat = p.latitude?.trim(), lng = p.longitude?.trim()
     return lat && lng ? { latitude: lat, longitude: lng } : { address: p.address?.trim() }
@@ -77,7 +85,7 @@ const commonControls: PropertyControls = {
 export function YatmoMap(props: Common & { mode: string; zoom: number; mapStyle: string; accentColor: string; marker: string; circleRadius: number; rounded: number; isochrone: string; routeFrom: string }) {
     const ref = useYatmoElement("yatmo-map", {
         key: props.licenseKey, country: props.country, language: props.language, ...location(props),
-        mode: props.mode, zoom: props.zoom, "map-style": props.mapStyle, "accent-color": props.accentColor,
+        mode: props.mode, zoom: props.zoom, "map-style": props.mapStyle, "accent-color": hex(props.accentColor),
         marker: props.marker, "circle-radius": props.marker === "circle" ? props.circleRadius : undefined,
         rounded: props.rounded || undefined, isochrone: props.isochrone, "route-from": props.routeFrom, height: "100%",
     })
